@@ -1,2 +1,18 @@
 @import "tailwindcss";
 @plugin "daisyui";
+@import "tailwindcss";
+@plugin "daisyui";
+
+@keyframes marquee {
+  from {
+    transform: translateX(0);
+  }
+
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.marquee {
+  animation: marquee 150s linear infinite;
+}
