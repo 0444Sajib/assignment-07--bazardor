@@ -60,7 +60,7 @@ export default function Navbar() {
     }, []);
 
     return (
-        <nav className="bg-white">
+        <nav className="sticky top-0 z-50 bg-white">
             <div className="mx-auto max-w-6xl px-4 py-4">
 
                 {/* =========================
