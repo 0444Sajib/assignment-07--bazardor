@@ -22,7 +22,7 @@ export default function ProductSections() {
 
     useEffect(() => {
         fetch(
-            "https://api.api-store.workers.dev/api/bazardor/products"
+            "https://api.abcz.workers.dev/api/bazardor/products"
         )
             .then((res) => res.json())
             .then((data) => {

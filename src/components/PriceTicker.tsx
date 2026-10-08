@@ -18,7 +18,7 @@ export default function PriceTicker() {
     const [products, setProducts] = useState<Product[]>([]);
 
     useEffect(() => {
-        fetch("https://api.api-store.workers.dev/api/bazardor/products")
+        fetch("https://api.abcz.workers.dev/api/bazardor/products")
             .then((res) => res.json())
             .then((data) => {
                 setProducts(data);
