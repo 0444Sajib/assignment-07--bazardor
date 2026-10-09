@@ -16,3 +16,8 @@
 .marquee {
   animation: marquee 150s linear infinite;
 }
+
+body {
+background-color: #F1F6F1;
+color: #1D271F;
+}
