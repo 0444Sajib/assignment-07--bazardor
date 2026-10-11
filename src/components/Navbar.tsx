@@ -1,9 +1,11 @@
 
+
+
 "use client";
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { authClient } from "@/lib/auth-client";
 
 type Category = {
@@ -17,8 +19,10 @@ export default function Navbar() {
     const [weekday, setWeekday] = useState("");
     const [categories, setCategories] = useState<Category[]>([]);
     const [loggingOut, setLoggingOut] = useState(false);
+    const [profileOpen, setProfileOpen] = useState(false);
 
     const pathname = usePathname();
+    const profileRef = useRef<HTMLDivElement>(null);
 
     // Logged-in user session
     const { data: session, isPending } = authClient.useSession();
@@ -64,8 +68,39 @@ export default function Navbar() {
         fetchCategories();
     }, []);
 
+    // Close profile dropdown when clicking outside
+    useEffect(() => {
+        function handleClickOutside(event: MouseEvent) {
+            if (
+                profileRef.current &&
+                !profileRef.current.contains(event.target as Node)
+            ) {
+                setProfileOpen(false);
+            }
+        }
+
+        function handleEscape(event: KeyboardEvent) {
+            if (event.key === "Escape") {
+                setProfileOpen(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        document.addEventListener("keydown", handleEscape);
+
+        return () => {
+            document.removeEventListener(
+                "mousedown",
+                handleClickOutside
+            );
+            document.removeEventListener("keydown", handleEscape);
+        };
+    }, []);
+
     // Sign out
     async function handleSignOut() {
+        if (loggingOut) return;
+
         setLoggingOut(true);
 
         try {
@@ -97,7 +132,7 @@ export default function Navbar() {
                                     xmlns="http://www.w3.org/2000/svg"
                                     viewBox="0 0 24 24"
                                     fill="none"
-                                    stroke="#05893E"
+                                    stroke="#00843D"
                                     strokeWidth="2"
                                     strokeLinecap="round"
                                     strokeLinejoin="round"
@@ -127,60 +162,222 @@ export default function Navbar() {
                             </span>
                         ) : session?.user ? (
                             /* Logged-in user profile */
-                            <div className="flex items-center gap-3">
-                                {/* Profile picture on the left */}
-                                <div className="flex h-14 w-14 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E4F3E8]">
-                                    {session.user.image ? (
-                                        <img
-                                            src={session.user.image}
-                                            alt="প্রোফাইল ছবি"
-                                            className="h-full w-full object-cover"
-                                        />
-                                    ) : (
-                                        <svg
-                                            xmlns="http://www.w3.org/2000/svg"
-                                            viewBox="0 0 24 24"
-                                            fill="none"
-                                            stroke="#05893E"
-                                            strokeWidth="1.5"
-                                            strokeLinecap="round"
-                                            strokeLinejoin="round"
-                                            className="h-9 w-9"
-                                        >
-                                            <circle cx="12" cy="8" r="4" />
-                                            <path d="M5 21a7 7 0 0 1 14 0" />
-                                        </svg>
-                                    )}
-                                </div>
+                            <div
+                                className="relative"
+                                ref={profileRef}
+                            >
+                                {/* Top-right profile button */}
+                                <button
+                                    type="button"
+                                    onClick={() =>
+                                        setProfileOpen((prev) => !prev)
+                                    }
+                                    aria-expanded={profileOpen}
+                                    aria-haspopup="true"
+                                    aria-label="প্রোফাইল মেনু"
+                                    className="flex items-center gap-2 rounded-full px-2 py-1.5 transition hover:bg-gray-50"
+                                >
+                                    {/* Google profile picture */}
+                                    <div className="flex h-9 w-9 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E4F3E8]">
+                                        {session.user.image ? (
+                                            <img
+                                                src={session.user.image}
+                                                alt="প্রোফাইল ছবি"
+                                                referrerPolicy="no-referrer"
+                                                className="h-full w-full object-cover"
+                                            />
+                                        ) : (
+                                            <svg
+                                                xmlns="http://www.w3.org/2000/svg"
+                                                viewBox="0 0 24 24"
+                                                fill="none"
+                                                stroke="#05893E"
+                                                strokeWidth="1.5"
+                                                strokeLinecap="round"
+                                                strokeLinejoin="round"
+                                                className="h-6 w-6"
+                                            >
+                                                <circle
+                                                    cx="12"
+                                                    cy="8"
+                                                    r="4"
+                                                />
+                                                <path d="M5 21a7 7 0 0 1 14 0" />
+                                            </svg>
+                                        )}
+                                    </div>
 
-                                {/* User details stacked vertically */}
-                                <div className="flex min-w-0 flex-col items-start gap-1">
-                                    <p className="max-w-[180px] break-words text-sm font-semibold text-[#1D271F]">
-                                        {session.user.name}
-                                    </p>
+                                    {/* Dynamic user name */}
+                                    <span className="max-w-[100px] truncate text-sm font-medium text-[#1D271F]">
+                                        {session.user.name || "ব্যবহারকারী"}
+                                    </span>
 
-                                    <p className="max-w-[180px] break-all text-xs text-gray-500">
-                                        {session.user.email}
-                                    </p>
-
-                                    <Link
-                                        href="/profile"
-                                        className="text-sm font-medium text-[#05893E] hover:underline"
+                                    {/* Dropdown arrow */}
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        viewBox="0 0 24 24"
+                                        fill="none"
+                                        stroke="currentColor"
+                                        strokeWidth="1.8"
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        className={`h-4 w-4 shrink-0 text-gray-500 transition-transform duration-200 ${profileOpen ? "rotate-180" : ""
+                                            }`}
                                     >
-                                        আমার প্রোফাইল
-                                    </Link>
+                                        <path d="m6 9 6 6 6-6" />
+                                    </svg>
+                                </button>
 
-                                    <button
-                                        type="button"
-                                        onClick={handleSignOut}
-                                        disabled={loggingOut}
-                                        className="mt-1 rounded-lg bg-red-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-red-700 disabled:cursor-not-allowed disabled:opacity-60"
+                                {/* Figma-style dropdown card */}
+                                {profileOpen && (
+                                    <div
+                                        role="menu"
+                                        className="absolute right-0 top-full z-[60] mt-2 w-[250px] overflow-hidden rounded-xl border border-gray-100 bg-white shadow-lg"
                                     >
-                                        {loggingOut
-                                            ? "লগআউট হচ্ছে..."
-                                            : "লগআউট"}
-                                    </button>
-                                </div>
+                                        {/* Dynamic user information */}
+                                        <div className="flex items-center gap-3 border-b border-gray-100 px-4 py-3">
+                                            <div className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-[#E4F3E8]">
+                                                {session.user.image ? (
+                                                    <img
+                                                        src={session.user.image}
+                                                        alt="প্রোফাইল ছবি"
+                                                        referrerPolicy="no-referrer"
+                                                        className="h-full w-full object-cover"
+                                                    />
+                                                ) : (
+                                                    <svg
+                                                        xmlns="http://www.w3.org/2000/svg"
+                                                        viewBox="0 0 24 24"
+                                                        fill="none"
+                                                        stroke="#05893E"
+                                                        strokeWidth="1.5"
+                                                        strokeLinecap="round"
+                                                        strokeLinejoin="round"
+                                                        className="h-6 w-6"
+                                                    >
+                                                        <circle
+                                                            cx="12"
+                                                            cy="8"
+                                                            r="4"
+                                                        />
+                                                        <path d="M5 21a7 7 0 0 1 14 0" />
+                                                    </svg>
+                                                )}
+                                            </div>
+
+                                            <div className="min-w-0 flex-1">
+                                                <p className="truncate text-sm font-semibold text-[#1D271F]">
+                                                    {session.user.name ||
+                                                        "ব্যবহারকারী"}
+                                                </p>
+
+                                                <p className="mt-0.5 break-all text-xs text-gray-500">
+                                                    {session.user.email}
+                                                </p>
+                                            </div>
+                                        </div>
+
+                                        {/* Dropdown menu items */}
+                                        <div className="p-2">
+                                            <Link
+                                                href="/profile"
+                                                role="menuitem"
+                                                onClick={() =>
+                                                    setProfileOpen(false)
+                                                }
+                                                className="flex items-center gap-2 rounded-lg px-3 py-2.5 text-sm text-[#1D271F] transition hover:bg-gray-50"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.7"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className="h-4 w-4 text-gray-500"
+                                                >
+                                                    <circle
+                                                        cx="12"
+                                                        cy="8"
+                                                        r="4"
+                                                    />
+                                                    <path d="M5 21a7 7 0 0 1 14 0" />
+                                                </svg>
+
+                                                আমার প্রোফাইল
+                                            </Link>
+
+                                            {/* Red sign-out button */}
+                                            {/* <button
+                                                type="button"
+                                                role="menuitem"
+                                                onClick={handleSignOut}
+                                                disabled={loggingOut}
+                                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.8"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className="h-4 w-4"
+                                                >
+                                                    <path d="M10 17l5-5-5-5" />
+                                                    <path d="M15 12H3" />
+                                                    <path d="M12 3h6a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-6" />
+                                                </svg>
+
+                                                {loggingOut
+                                                    ? "লগআউট হচ্ছে..."
+                                                    : "সাইন আউট"}
+                                            </button> */}
+
+
+
+
+
+                                            {/* Red sign-out button */}
+                                            <button
+                                                type="button"
+                                                role="menuitem"
+                                                onClick={handleSignOut}
+                                                disabled={loggingOut}
+                                                className="flex w-full items-center gap-2 rounded-lg px-3 py-2.5 text-left text-sm font-medium text-red-600 transition hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-60"
+                                            >
+                                                <svg
+                                                    xmlns="http://www.w3.org/2000/svg"
+                                                    viewBox="0 0 24 24"
+                                                    fill="none"
+                                                    stroke="currentColor"
+                                                    strokeWidth="1.8"
+                                                    strokeLinecap="round"
+                                                    strokeLinejoin="round"
+                                                    className="h-4 w-4 shrink-0"
+                                                >
+                                                    <path d="M9 14 4 9l5-5" />
+                                                    <path d="M4 9h10a5 5 0 0 1 5 5v1" />
+                                                </svg>
+
+                                                {loggingOut ? "লগআউট হচ্ছে..." : "সাইন আউট"}
+                                            </button>
+
+
+
+
+
+
+
+
+
+
+
+                                        </div>
+                                    </div>
+                                )}
                             </div>
                         ) : (
                             /* Not logged in */
@@ -213,11 +410,10 @@ export default function Navbar() {
                             <Link
                                 key={category.slug}
                                 href={`/category/${category.slug}`}
-                                className={`whitespace-nowrap rounded-lg px-4 py-2 font-semibold transition ${
-                                    isActive
+                                className={`whitespace-nowrap rounded-lg px-4 py-2 font-semibold transition ${isActive
                                         ? "bg-[#05893E] text-white"
                                         : "text-[#1D271F] hover:bg-gray-100 hover:text-[#05893E]"
-                                }`}
+                                    }`}
                             >
                                 {category.icon && (
                                     <span className="mr-1">
@@ -234,3 +430,6 @@ export default function Navbar() {
         </nav>
     );
 }
+
+
+

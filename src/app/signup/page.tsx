@@ -1,20 +1,43 @@
 
 "use client";
 
-import { useState } from "react";
+import { Suspense, useCallback, useState } from "react";
 import Link from "next/link";
+import { useSearchParams } from "next/navigation";
 import { authClient } from "@/lib/auth-client";
+import Toast, { type ToastType } from "@/components/Toast";
 
-export default function SignUpPage() {
+function SignUpForm() {
+    const searchParams = useSearchParams();
+
     const [name, setName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
     const [loading, setLoading] = useState(false);
 
+    const [toast, setToast] = useState<{
+        message: string;
+        type: ToastType;
+    } | null>(null);
+
+    const closeToast = useCallback(() => {
+        setToast(null);
+    }, []);
+
+    const callbackURL = searchParams.get("callbackURL");
+
+    const returnTo =
+        callbackURL?.startsWith("/") &&
+        !callbackURL.startsWith("//") &&
+        !callbackURL.includes("\\")
+            ? callbackURL
+            : "/";
+
     async function handleSignUp(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         setMessage("");
+        setToast(null);
         setLoading(true);
 
         try {
@@ -22,7 +45,7 @@ export default function SignUpPage() {
                 name,
                 email,
                 password,
-                callbackURL: "/",
+                callbackURL: returnTo,
             });
 
             if (error) {
@@ -31,15 +54,34 @@ export default function SignUpPage() {
                 console.error("Error status:", error.status);
                 console.error("Error statusText:", error.statusText);
 
-                setMessage(
-                    error.message || "অ্যাকাউন্ট তৈরি করা যায়নি।"
-                );
+                const errorMessage =
+                    error.message || "অ্যাকাউন্ট তৈরি করা যায়নি।";
+
+                setMessage(errorMessage);
+                setToast({
+                    message: errorMessage,
+                    type: "error",
+                });
                 return;
             }
 
-            window.location.href = "/";
-        } catch {
-            setMessage("সমস্যা হয়েছে। আবার চেষ্টা করো।");
+            setToast({
+                message: "অ্যাকাউন্ট সফলভাবে তৈরি হয়েছে!",
+                type: "success",
+            });
+
+            await new Promise((resolve) => setTimeout(resolve, 700));
+            window.location.href = returnTo;
+        } catch (error) {
+            console.error("Signup failed:", error);
+
+            const errorMessage = "সমস্যা হয়েছে। আবার চেষ্টা করো।";
+
+            setMessage(errorMessage);
+            setToast({
+                message: errorMessage,
+                type: "error",
+            });
         } finally {
             setLoading(false);
         }
@@ -47,6 +89,14 @@ export default function SignUpPage() {
 
     return (
         <main className="flex min-h-screen items-center justify-center bg-[#F1F6F1] px-4 py-10">
+            {toast && (
+                <Toast
+                    message={toast.message}
+                    type={toast.type}
+                    onClose={closeToast}
+                />
+            )}
+
             <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-sm sm:p-8">
                 <Link
                     href="/"
@@ -149,7 +199,11 @@ export default function SignUpPage() {
                 <p className="mt-6 text-center text-sm text-gray-600">
                     আগে থেকেই অ্যাকাউন্ট আছে?{" "}
                     <Link
-                        href="/signin"
+                        href={`/signin${
+                            returnTo !== "/"
+                                ? `?callbackURL=${encodeURIComponent(returnTo)}`
+                                : ""
+                        }`}
                         className="font-semibold text-[#05893E] hover:underline"
                     >
                         লগইন করো
@@ -157,5 +211,19 @@ export default function SignUpPage() {
                 </p>
             </div>
         </main>
+    );
+}
+
+export default function SignUpPage() {
+    return (
+        <Suspense
+            fallback={
+                <main className="flex min-h-screen items-center justify-center bg-[#F1F6F1] px-4">
+                    <p className="text-[#05893E]">লোড হচ্ছে...</p>
+                </main>
+            }
+        >
+            <SignUpForm />
+        </Suspense>
     );
 }
