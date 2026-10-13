@@ -1,36 +1,32 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🛒 বাজার দর | BazarDor
 
-## Getting Started
+**প্রয়োজনীয় পণ্যের দাম এক নজরে।**
 
-First, run the development server:
+BazarDor is a responsive web application that helps users explore daily essential product prices in Bangladesh. Users can check price changes, browse products by category, and view market-wise prices after signing in.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+## Technologies Used
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+- Next.js (App Router)
+- React
+- TypeScript
+- Tailwind CSS
+- DaisyUI
+- Better Auth
+- BazarDor API
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Key Features
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+1. **Responsive Design** — Works on mobile, tablet, and desktop.
+2. **Live Product Data** — Fetches product and category data from the BazarDor API.
+3. **Price Trends** — Displays products with increased and decreased prices.
+4. **Category Browsing** — Browse products by category with sorting options.
+5. **Product Details** — View product information and market-wise prices.
+6. **Authentication** — Sign up and sign in using Better Auth.
+7. **Protected Product Pages** — Requires login to access product details.
+8. **Profile Update** — Users can update their account name.
 
-## Learn More
+## Project
 
-To learn more about Next.js, take a look at the following resources:
+## Project Name: BazarDor (বাজার দর)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Purpose:To help users check essential product prices conveniently in one place.
