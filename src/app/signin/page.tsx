@@ -95,6 +95,9 @@ function SignInForm() {
             const { error } = await authClient.signIn.social({
                 provider,
                 callbackURL: returnTo,
+                requestSignUp: true,
+                additionalData: {},
+                scopes: ["openid", "email", "profile"],
             });
 
             if (error) {
@@ -280,8 +283,8 @@ function SignInForm() {
                     অ্যাকাউন্ট নেই?{" "}
                     <Link
                         href={`/signup${returnTo !== "/"
-                                ? `?callbackURL=${encodeURIComponent(returnTo)}`
-                                : ""
+                            ? `?callbackURL=${encodeURIComponent(returnTo)}`
+                            : ""
                             }`}
                         className="font-semibold text-[#05893E] hover:underline"
                     >
